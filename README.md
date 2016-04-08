@@ -18,7 +18,7 @@ weiboCrawler的抓取分两种，一种是抓具体某条微博相关的信息�
 
 ####抓取某一条微博的相关信息
 
-1、抓取某条微博相关的信息时，首先要获取这条微博的ID，具体方法：点击这条微博的发布时间，然后到达这条微博的页面，在这条微博的URL里，如：http://weibo.com/2630646082/DgI5UBxIF?from=page_1005052630646082_profile&wvr=6&mod=weibotime&type=comment#_rnd1460124660689 ，最后一个斜杠和问号中间的部分，就是这条微博的ID，比如这个例子里，微博ID=DgI5UBxIF；
+1、抓取某条微博相关的信息时，首先要获取这条微博的ID，具体方法：点击这条微博的发布时间，然后到达这条微博的页面，在这条微博的URL里，如：http://weibo.com/1852855013/DpZz5BRRn?ref=home&rid=0_0_0_2666928219837039753&type=comment ，最后一个斜杠和问号中间的部分，就是这条微博的ID，比如这个例子里，微博ID=DpZz5BRRn；
 
 2、获取ID之后，通过参数 -w 就可以传递微博ID， -r 表示抓取转发， -c 表示抓取评论，-a表示抓取点赞；
 >* 示例：为抓取上面这条微博的转发列表，在命令行里输入： python weiboCrawler.py -w 微博ID -r
@@ -30,7 +30,7 @@ weiboCrawler的抓取分两种，一种是抓具体某条微博相关的信息�
 
 ####抓取某个用户的所有微博
 
-1、同理，抓取某个用户，首先需要获得该用户的用户ID，用户的用户ID通过该用户主页的URL即可得到；微博ID分两种，有的微博用户启用了个性域名，如：http://weibo.com/xieixiaoyuan?is_all=1 ，则用户ID=xieixiaoyuan；有的用户没有启用个性域名，如：http://weibo.com/u/2172637555?is_hot=1 ，则用户ID=2172637555；
+1、同理，抓取某个用户，首先需要获得该用户的用户ID，用户的用户ID通过该用户主页的URL即可得到；微博ID分两种，有的微博用户启用了个性域名，如：http://weibo.com/xieixiaoyuan?is_all=1 ，则用户ID=xieixiaoyuan；有的用户没有启用个性域名，如：http://weibo.com/u/2759941935?is_hot=1 ，则用户ID=2759941935；
 
 2、获取用户ID之后，通过输入命令行： python weiboCrawler.py -u 用户ID ，即可抓取该用户发布的所有微博，结果自动保存成文件，文件名为： user_用户ID。
 
