@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf8 -*-
 """
 Created on Wed Apr 06 09:46:31 2016
 
@@ -16,12 +16,20 @@ import getopt
 reload(sys)
 sys.setdefaultencoding("utf8")
 
+if sys.platform.find('darwin') >= 0:
+    code = "utf8"
+elif sys.platform.find('linux') >= 0:
+    code = "utf8"
+else:
+    code = "gbk"
+
+
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hrcaw:u:", ["help", "repost","comment","userID=","attitude","weiboID="])
 except getopt.GetoptError:
-    print "参数不正确".encode("gbk")
+    print u"参数不正确".encode(code)
 
-url = "http://weibo.cn/5892492312"
+url = "http://login.weibo.cn/login/?"
 repost_url = "http://weibo.cn/repost/"
 comment_url = "http://weibo.cn/comment/"
 attitude_url = "http://weibo.cn/attitude/"
@@ -31,18 +39,18 @@ param = {"User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (K
 s = requests.session()
 
 def usage():
-    print '''抓转发: python weiboCrawler.py -w 微博ID -r;
+    print u'''抓转发: python weiboCrawler.py -w 微博ID -r;
 抓评论: python weiboCrawler.py -w 微博ID -c;
 抓点赞: python weiboCrawler.py -w 微博ID -a;
-抓用户: python weiboCrawler.py -u 用户ID;'''.encode("gbk")
+抓用户: python weiboCrawler.py -u 用户ID;'''.encode(code)
     
     
 
 def login():
-    username = raw_input("请输入用户名：".encode("gbk"))
-    password = raw_input("请输入密码：".encode("gbk"))
+    username = raw_input(u"请输入用户名：".encode(code))
+    password = raw_input(u"请输入密码：".encode(code))
     req = requests.get(url,headers=param)
-    soup = BeautifulSoup(req.text,"lxml")
+    soup = BeautifulSoup(req.text,"html.parser")
     img_url = soup.find("img").get("src")
     pass_name = soup.find("input",{"type":"password"}).get("name")
     backURL = soup.find("input",{"name":"backURL"}).get("value")
@@ -63,28 +71,28 @@ def login():
         subprocess.call(['xdg-open', CAPTCHAPath])
     else:
         os.startfile(CAPTCHAPath)
-    CAPTCHA = raw_input("请输入验证码:".encode("gbk"))
+    CAPTCHA = raw_input(u"请输入验证码:".encode(code))
     
     data = {"mobile":username,pass_name:password,"code":quote(CAPTCHA.decode("gbk").encode("utf8")),"remember":"on","backURL":backURL,
             "backTitle":backTitle,"vk":vk,"capId":capId,"submit":submit}
     
     req = s.post("http://login.weibo.cn/login/?",data=data,headers=param)
-    soup = BeautifulSoup(req.text,"lxml")
+    soup = BeautifulSoup(req.text,"html.parser")
     if soup.find("div",{"class":"me"}) == None:
-        print "-----------登录成功---------".encode("gbk")
+        print u"-----------登录成功---------".encode(code)
     else:
-        print "-----------验证码或用户名或密码不对，请重新登录！-----------".encode("gbk")
+        print u"-----------验证码或用户名或密码不对，请重新登录！-----------".encode(code)
         login()
 
 def getPageNum(url):
     req = s.get(url+"?page=1")
-    soup = BeautifulSoup(req.text,"lxml")
+    soup = BeautifulSoup(req.text,"html.parser")
     pageNum = soup.find("input",{"name":"mp"}).get("value")
     return int(pageNum)
  
 def parseC(url,outfile):
     req = s.get(url,headers=param)
-    soup = BeautifulSoup(req.text,"lxml",from_encoding="utf8")
+    soup = BeautifulSoup(req.text,"html.parser",from_encoding="utf8")
     contents = soup.find_all("div",{"class":"c"})
     content = ""
     time = ""
@@ -95,16 +103,17 @@ def parseC(url,outfile):
             user_url = c.find("a").get("href")
             content = c.find("span",{"class":"ctt"}).text
             time = c.find("span",{"class":"ct"}).text.strip()
+            print id,user.encode(code,"ignore"),content.encode(code,"ignore")
             line = "%s\t%s\t%s\t%s\t%s\n" %(id,user.encode("utf8"),user_url,content.encode("utf8"),time.encode("utf8"))
-            print id,user,content.decode("utf8","ignore").encode("gbk","ignore")
             outfile.write(line)
         except Exception,e:
-            print e
+            #print e
+            pass
 
  
 def parseR(url,outfile):
     req = s.get(url,headers=param)
-    soup = BeautifulSoup(req.text,"lxml",from_encoding="utf8")
+    soup = BeautifulSoup(req.text,"html.parser",from_encoding="utf8")
     contents = soup.find_all("div",{"class":"c"})
     for c in contents:
         try:
@@ -114,26 +123,28 @@ def parseR(url,outfile):
             texts = [t.strip() for t in texts if t.strip() != ""]
             content = "".join(texts[1:-2])
             time = c.find("span",{"class":"ct"}).text.strip()
-            line = "%s\t%s\t%s\t%s\n" %(user.encode("utf8"),user_url,content.encode("utf8","replace"),time.encode("utf8"))
-            print user,content.decode("utf8","ignore").encode("gbk","ignore")
+            print user.encode(code,"ignore"),content.encode(code,"ignore")
+            line = "%s\t%s\t%s\t%s\n" %(user,user_url,content.encode("utf8","ignore"),time.encode("utf8","ignore"))
             outfile.write(line)
         except Exception,e:
-            print e
+            #print e
+            pass
 
 def parseA(url,outfile):
     req = s.get(url,headers=param)
-    soup = BeautifulSoup(req.text,"lxml",from_encoding="utf8")
+    soup = BeautifulSoup(req.text,"html.parser",from_encoding="utf8")
     contents = soup.find_all("div",{"class":"c"})
     for c in contents:
         try:
             user = c.find("a").text
             user_url = c.find("a").get("href")
             time = c.find("span",{"class":"ct"}).text.strip()
-            line = "%s\t%s\t%s\n" %(user.encode("utf8"),user_url,time.encode("utf8"))
-            print user
+            print user.encode(code,"ignore")
+            line = "%s\t%s\t%s\n" %(user.encode("utf8","ignore"),user_url,time.encode("utf8","ignore"))
             outfile.write(line)
         except Exception,e:
-            print e
+            #print e
+            pass
             
 def parse(url,outfile):
     content = ""
@@ -149,19 +160,28 @@ def parse(url,outfile):
     ori_comment = ""
 
     req = s.get(url,headers=param)
-    soup = BeautifulSoup(req.text,"lxml",from_encoding="utf8")
+    soup = BeautifulSoup(req.text,"html.parser",from_encoding="utf8")
     contents = soup.find_all("div",{"class":"c"})
     for c in contents:
         try:
             id = c.get("id")
             divs = c.find_all("div")
-            texts = divs[-1].find_all(text=True)
-            texts = [t.strip() for t in texts if t.strip() != ""]
-            content = "".join(texts[:-5])
-            like = texts[-5]
-            repost = texts[-4]
-            comment  = texts[-3]
-            time = texts[-1]  
+            if divs[-1].find("span",{"class":"ct"}).find("a"):
+                texts = divs[-1].find_all(text=True)
+                texts = [t.strip() for t in texts if t.strip() != ""]
+                content = "".join(texts[:-6])
+                like = texts[-6]
+                repost = texts[-5]
+                comment  = texts[-4]
+                time = divs[-1].find("span",{"class":"ct"}).find_all(text=True) 
+            else:
+                texts = divs[-1].find_all(text=True)
+                texts = [t.strip() for t in texts if t.strip() != ""]
+                content = "".join(texts[:-5])
+                like = texts[-5]
+                repost = texts[-4]
+                comment  = texts[-3]
+                time = texts[-1]
             if len(divs) == 3:  
                 ori_user = divs[0].find("span",{"class":"cmt"}).find("a").text
                 ori_userID = divs[0].find("span",{"class":"cmt"}).find("a").get("href")
@@ -170,15 +190,15 @@ def parse(url,outfile):
                 ori_like = spans[0].text
                 ori_repost = spans[1].text
                 ori_comment = divs[1].find("a",{"class":"cc"}).text           
-                
+            print id,content.encode(code,"ignore")
             line = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" %(id,content.encode("utf8"),\
             like.encode("utf8"), repost.encode("utf8"), comment.encode("utf8"), time.encode("utf8"),\
             ori_user.encode("utf8"), ori_userID, ori_text.encode("utf8"), ori_like.encode("utf8")\
             , ori_repost.encode("utf8"),  ori_comment.encode("utf8"))
-            print id,content.decode("utf8","ignore").encode("gbk","ignore")
             outfile.write(line)
         except Exception,e:
-            print e
+            #print e
+            pass
             
     
 if __name__ == "__main__":
@@ -203,7 +223,7 @@ if __name__ == "__main__":
         if o in ("-u","--userID"):
             userID = a
             if userID == "":
-                print "UserID不能为空".encode("gbk")
+                print u"UserID不能为空".encode(code)
                 exit()
             else:
                 login()
@@ -218,15 +238,15 @@ if __name__ == "__main__":
                         time.sleep(2)  
         if o in ("-w","--weiboID"):
             if a == "":
-                print "weiboID不能为空".encode("gbk")
+                print u"weiboID不能为空".encode(code)
                 exit()
             else:
                 weiboID = a
-                print "-----------微博登录-----------".encode("gbk")
+                print u'-----------微博登录-----------'.encode(code)
                 login()
         if o in ("-r","--repost"):
             if weiboID == "":
-                print "weiboID不能为空".encode("gbk")
+                print u"weiboID不能为空".encode(code)
                 exit()
             else:
                 url = repost_url + weiboID
@@ -240,7 +260,7 @@ if __name__ == "__main__":
                         time.sleep(2)            
         if o in ("-c","--comment"):
             if weiboID == "":
-                print "weiboID不能为空".encode("gbk")
+                print u"weiboID不能为空".encode(code)
                 exit()
             else:
                 url = comment_url + weiboID
@@ -254,7 +274,7 @@ if __name__ == "__main__":
                         time.sleep(2)  
         if o in ("-a","--attitude"):
             if weiboID == "":
-                print "weiboID不能为空".encode("gbk")
+                print u"weiboID不能为空".encode(code)
                 exit()
             else:
                 url = attitude_url + weiboID
