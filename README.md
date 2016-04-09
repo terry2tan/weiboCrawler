@@ -12,9 +12,9 @@
 
 ##安装方法
 
-1、安装python2.7（Mac已自带python）
+1、安装python2.7（Mac已自带python，无需安装）
 
-2、安装依赖库bs4，具体方法：pip install bs4（Mac： sudo pip install bs4）
+2、安装依赖库bs4，具体方法：pip install bs4（Mac:sudo pip install bs4）
 
 3、下载weiboCrawler.py到一个文件夹
 
