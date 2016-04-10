@@ -73,7 +73,7 @@ def login():
         os.startfile(CAPTCHAPath)
     CAPTCHA = raw_input(u"请输入验证码:".encode(code))
     
-    data = {"mobile":username,pass_name:password,"code":quote(CAPTCHA.decode("gbk").encode("utf8")),"remember":"on","backURL":backURL,
+    data = {"mobile":username,pass_name:password,"code":quote(CAPTCHA.decode(code).encode("utf8")),"remember":"on","backURL":backURL,
             "backTitle":backTitle,"vk":vk,"capId":capId,"submit":submit}
     
     req = s.post("http://login.weibo.cn/login/?",data=data,headers=param)
@@ -87,7 +87,10 @@ def login():
 def getPageNum(url):
     req = s.get(url+"?page=1")
     soup = BeautifulSoup(req.text,"html.parser")
-    pageNum = soup.find("input",{"name":"mp"}).get("value")
+    try:
+        pageNum = soup.find("input",{"name":"mp"}).get("value")
+    except:
+        pageNum = 1
     return int(pageNum)
  
 def parseC(url,outfile):
